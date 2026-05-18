@@ -1,0 +1,73 @@
+{
+  "api": {
+    "baseUrl": "http://192.168.10.1",
+    "auth": {
+      "mode": "basic",
+      "tokenEnvVar": "PFSENSE_FW1_TOKEN",
+      "username": "",
+      "password": "",
+      "usernameEnvVar": "PFSENSE_USERNAME",
+      "passwordEnvVar": "PFSENSE_PASSWORD"
+    },
+    "skipCertificateCheck": true,
+    "timeoutSeconds": 20
+  },
+  "outputDir": "./generated",
+  "runtime": {
+    "stateFile": "./generated/runtime-state.json"
+  },
+  "discovery": {
+    "sources": [
+      {
+        "name": "firewall_states",
+        "method": "GET",
+        "endpoint": "/api/v2/firewall/states",
+        "responsePath": "data",
+        "ipFields": ["source"]
+      }
+    ]
+  },
+  "mapping": {
+    "trainingSubnetCidr": "192.168.50.0/24",
+    "descriptionPrefix": "AUTO_RDP_",
+    "wanInterface": "wan",
+    "protocol": "tcp",
+    "destinationAddress": "this_firewall",
+    "associatedRule": "pass",
+    "wanPortBase": 40000,
+    "targetPort": 3389
+  },
+  "safety": {
+    "requireRecentLease": true,
+    "minRecentMinutes": 30,
+    "allowUnknownLeaseAge": true,
+    "checkTargetPortOpen": true,
+    "targetPortCheckTimeoutMs": 800,
+    "staleRuleMode": "mark",
+    "staleGraceMinutes": 180
+  },
+  "nat": {
+    "listEndpoint": "/api/v2/firewall/nat/port_forwards",
+    "listMethod": "GET",
+    "listResponsePath": "data",
+    "descriptionFields": ["descr", "description"],
+    "idFields": ["id", "uuid", "tracker"],
+    "createEndpoint": "/api/v2/firewall/nat/port_forward",
+    "createMethod": "POST",
+    "createPayloadTemplate": {
+      "interface": "{wan_interface}",
+      "ipprotocol": "inet",
+      "protocol": "{protocol}",
+      "source": "any",
+      "destination": "wan:ip",
+      "destination_port": "{wan_port}",
+      "target": "{target_ip}",
+      "local_port": "{target_port}",
+      "descr": "{description}"
+    },
+    "deleteEndpointTemplate": "/api/v2/firewall/nat/port_forward?id={id}",
+    "deleteMethod": "DELETE",
+    "applyEndpoint": "/api/v2/firewall/apply",
+    "applyMethod": "POST"
+  }
+}

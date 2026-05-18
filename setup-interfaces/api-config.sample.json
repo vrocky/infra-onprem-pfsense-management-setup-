@@ -1,0 +1,53 @@
+{
+  "api": {
+    "baseUrl": "https://192.168.1.10",
+    "tokenEnvVar": "PFSENSE_FW1_TOKEN",
+    "skipCertificateCheck": true,
+    "timeoutSeconds": 20
+  },
+  "desired": {
+    "interfaceIp": "192.168.50.1",
+    "subnetBits": 24,
+    "subnetCidr": "192.168.50.0/24",
+    "dhcpEnabled": true,
+    "dhcpRangeStart": "192.168.50.20",
+    "dhcpRangeEnd": "192.168.50.199"
+  },
+  "interface": {
+    "discover": {
+      "listEndpoint": "/api/v1/interface",
+      "listMethod": "GET",
+      "listResponsePath": "data",
+      "matchField": "descr",
+      "matchValue": "training-vm-lan",
+      "idFields": ["if", "interface", "id"],
+      "dryRunInterfaceId": "opt2"
+    },
+    "configure": {
+      "endpointTemplate": "/api/v1/interface/{interface_id}",
+      "method": "PUT",
+      "payloadTemplate": {
+        "ipaddr": "{ip_address}",
+        "subnet": "{subnet_bits}",
+        "enable": true
+      }
+    }
+  },
+  "dhcp": {
+    "configure": {
+      "endpointTemplate": "/api/v1/services/dhcpd/{interface_id}",
+      "method": "PUT",
+      "payloadTemplate": {
+        "enable": "{dhcp_enabled}",
+        "range": {
+          "from": "{dhcp_range_start}",
+          "to": "{dhcp_range_end}"
+        }
+      }
+    }
+  },
+  "apply": {
+    "endpoint": "/api/v1/firewall/apply",
+    "method": "POST"
+  }
+}

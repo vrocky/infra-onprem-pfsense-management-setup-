@@ -1,0 +1,84 @@
+{
+  "api": {
+    "baseUrl": "http://192.168.10.1",
+    "authType": "basic",
+    "username": "admin",
+    "passwordEnvVar": "PFSENSE_PASSWORD",
+    "skipCertificateCheck": true,
+    "timeoutSeconds": 20
+  },
+  "desired": {
+    "interfaceIp": "192.168.50.1",
+    "interfaceDescription": "TRAINING-LAN",
+    "subnetBits": 24,
+    "subnetCidr": "192.168.50.0/24",
+    "dhcpEnabled": true,
+    "dhcpRangeStart": "192.168.50.20",
+    "dhcpRangeEnd": "192.168.50.199"
+  },
+  "interface": {
+    "discover": {
+      "listEndpoint": "/api/v2/interfaces",
+      "listMethod": "GET",
+      "listResponsePath": "data",
+      "matchField": "id",
+      "matchValue": "opt1",
+      "idFields": ["id"],
+      "dryRunInterfaceId": "opt1"
+    },
+    "configure": {
+      "endpointTemplate": "/api/v2/interface",
+      "method": "PATCH",
+      "payloadTemplate": {
+        "id": "{interface_id}",
+        "descr": "{interface_description}",
+        "typev4": "static",
+        "ipaddr": "{ip_address}",
+        "subnet": "{subnet_bits}",
+        "enable": true
+      }
+    }
+  },
+  "dhcp": {
+    "configure": {
+      "endpointTemplate": "/api/v2/services/dhcp_server",
+      "method": "PATCH",
+      "payloadTemplate": {
+        "id": "{interface_id}",
+        "enable": "{dhcp_enabled}",
+        "gateway": "{gateway}",
+        "dnsserver": [
+          "{gateway}"
+        ],
+        "range_from": "{dhcp_range_start}",
+        "range_to": "{dhcp_range_end}"
+      }
+    }
+  },
+  "firewall": {
+    "ensureRule": {
+      "listEndpoint": "/api/v2/firewall/rules",
+      "listMethod": "GET",
+      "listResponsePath": "data",
+      "matchSource": "any",
+      "matchDestination": "any",
+      "matchDescription": "Allow TRAINING-LAN to any",
+      "createEndpoint": "/api/v2/firewall/rule",
+      "createMethod": "POST",
+      "createPayloadTemplate": {
+        "type": "pass",
+        "interface": [
+          "{interface_id}"
+        ],
+        "ipprotocol": "inet",
+        "source": "any",
+        "destination": "any",
+        "descr": "Allow TRAINING-LAN to any"
+      }
+    }
+  },
+  "apply": {
+    "endpoint": "/api/v2/firewall/apply",
+    "method": "POST"
+  }
+}

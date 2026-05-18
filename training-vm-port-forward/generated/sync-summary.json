@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-05-03T10:18:11.612556+00:00",
+  "discovered": 2,
+  "eligible": 2,
+  "rejectedUnknownAge": 0,
+  "rejectedStale": 0,
+  "desired": 2,
+  "created": 2,
+  "skippedExisting": 0,
+  "skippedTargetPortClosed": 0,
+  "staleCandidates": 0,
+  "removed": 0,
+  "staleRuleMode": "mark",
+  "staleGraceMinutes": 180,
+  "applied": true
+}

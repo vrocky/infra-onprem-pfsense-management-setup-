@@ -1,0 +1,17 @@
+[
+  {
+    "name": "training-vm-01",
+    "ip": "192.168.50.21",
+    "enabled": true
+  },
+  {
+    "name": "training-vm-02",
+    "ip": "192.168.50.35",
+    "enabled": true
+  },
+  {
+    "name": "training-vm-03",
+    "ip": "192.168.50.109",
+    "enabled": true
+  }
+]

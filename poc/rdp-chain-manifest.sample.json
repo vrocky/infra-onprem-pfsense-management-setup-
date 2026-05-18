@@ -1,0 +1,39 @@
+{
+  "skipCertificateCheck": true,
+  "applyAfterEachFirewall": true,
+  "firewall2WanIp": "10.20.0.2",
+  "firewalls": {
+    "firewall1": {
+      "baseUrl": "https://10.20.0.1",
+      "tokenEnvVar": "PFSENSE_FW1_TOKEN",
+      "natCreateEndpoint": "/api/v1/firewall/nat/port_forward",
+      "natCreateMethod": "POST",
+      "applyEndpoint": "/api/v1/firewall/apply",
+      "applyMethod": "POST",
+      "templatePath": ".\\templates\\fw1-port-forward.template.json"
+    },
+    "firewall2": {
+      "baseUrl": "https://10.20.0.2",
+      "tokenEnvVar": "PFSENSE_FW2_TOKEN",
+      "natCreateEndpoint": "/api/v1/firewall/nat/port_forward",
+      "natCreateMethod": "POST",
+      "applyEndpoint": "/api/v1/firewall/apply",
+      "applyMethod": "POST",
+      "templatePath": ".\\templates\\fw2-port-forward.template.json"
+    }
+  },
+  "mappings": [
+    {
+      "name": "trainingvm1",
+      "publicPort": 53389,
+      "targetVmIp": "192.168.50.101",
+      "targetVmPort": 3389
+    },
+    {
+      "name": "trainingvm2",
+      "publicPort": 53390,
+      "targetVmIp": "192.168.50.102",
+      "targetVmPort": 3389
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "interface": "wan",
+  "protocol": "tcp",
+  "description": "AUTO_RDP_FW1_{{MAPPING_NAME}}",
+  "destination": {
+    "address": "this_firewall",
+    "port": {{PUBLIC_PORT}}
+  },
+  "target": {
+    "address": "{{FW2_WAN_IP}}",
+    "port": {{PUBLIC_PORT}}
+  },
+  "associated_rule": "pass"
+}

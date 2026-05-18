@@ -1,0 +1,91 @@
+{
+  "api": {
+    "baseUrl": "https://10.20.0.1",
+    "auth": {
+      "mode": "basic",
+      "tokenEnvVar": "PFSENSE_FW1_TOKEN",
+      "username": "",
+      "password": "",
+      "usernameEnvVar": "PFSENSE_USERNAME",
+      "passwordEnvVar": "PFSENSE_PASSWORD"
+    },
+    "skipCertificateCheck": true,
+    "timeoutSeconds": 20
+  },
+  "outputDir": "./generated",
+  "runtime": {
+    "stateFile": "./generated/runtime-state.json"
+  },
+  "discovery": {
+    "sources": [
+      {
+        "name": "arp",
+        "method": "GET",
+        "endpoint": "/api/v1/status/arp",
+        "responsePath": "data",
+        "ipFields": ["ip", "ip_address", "address"],
+        "interfaceField": "interface",
+        "interfaceName": "training-vm-lan",
+        "timestampFields": ["last_seen", "lastSeen", "updated_at", "timestamp"],
+        "hostnameFields": ["hostname", "host", "name"]
+      },
+      {
+        "name": "dhcp_leases",
+        "method": "GET",
+        "endpoint": "/api/v1/services/dhcpd/leases",
+        "responsePath": "data",
+        "ipFields": ["ip", "ip_address", "address"],
+        "interfaceField": "interface",
+        "interfaceName": "training-vm-lan",
+        "timestampFields": ["last_seen", "lastSeen", "updated_at", "timestamp", "ends"],
+        "hostnameFields": ["hostname", "host", "name"]
+      }
+    ]
+  },
+  "mapping": {
+    "trainingSubnetCidr": "192.168.50.0/24",
+    "descriptionPrefix": "AUTO_RDP_",
+    "wanInterface": "wan",
+    "protocol": "tcp",
+    "destinationAddress": "this_firewall",
+    "associatedRule": "pass",
+    "wanPortBase": 40000,
+    "targetPort": 3389
+  },
+  "safety": {
+    "requireRecentLease": true,
+    "minRecentMinutes": 30,
+    "allowUnknownLeaseAge": false,
+    "checkTargetPortOpen": false,
+    "targetPortCheckTimeoutMs": 800,
+    "staleRuleMode": "mark",
+    "staleGraceMinutes": 180
+  },
+  "nat": {
+    "listEndpoint": "/api/v1/firewall/nat/port_forward",
+    "listMethod": "GET",
+    "listResponsePath": "data",
+    "descriptionFields": ["description", "descr"],
+    "idFields": ["id", "uuid", "tracker"],
+    "createEndpoint": "/api/v1/firewall/nat/port_forward",
+    "createMethod": "POST",
+    "createPayloadTemplate": {
+      "interface": "{wan_interface}",
+      "protocol": "{protocol}",
+      "description": "{description}",
+      "destination": {
+        "address": "{destination_address}",
+        "port": "{wan_port}"
+      },
+      "target": {
+        "address": "{target_ip}",
+        "port": "{target_port}"
+      },
+      "associated_rule": "{associated_rule}"
+    },
+    "deleteEndpointTemplate": "/api/v1/firewall/nat/port_forward/{id}",
+    "deleteMethod": "DELETE",
+    "applyEndpoint": "/api/v1/firewall/apply",
+    "applyMethod": "POST"
+  }
+}

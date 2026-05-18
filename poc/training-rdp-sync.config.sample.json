@@ -1,0 +1,23 @@
+{
+  "skipCertificateCheck": true,
+  "removeStaleAutoRules": false,
+  "outputDir": ".\\generated",
+  "inventoryFile": ".\\training-vm-inventory.sample.json",
+  "firewall": {
+    "baseUrl": "https://10.20.0.1",
+    "tokenEnvVar": "PFSENSE_FW1_TOKEN",
+    "natListEndpoint": "/api/v1/firewall/nat/port_forward",
+    "natCreateEndpoint": "/api/v1/firewall/nat/port_forward",
+    "natDeleteEndpointTemplate": "/api/v1/firewall/nat/port_forward/{id}",
+    "applyEndpoint": "/api/v1/firewall/apply"
+  },
+  "mapping": {
+    "descriptionPrefix": "AUTO_RDP_",
+    "wanInterface": "wan",
+    "protocol": "tcp",
+    "destinationAddress": "this_firewall",
+    "associatedRule": "pass",
+    "wanPortBase": 40000,
+    "targetPort": 3389
+  }
+}
