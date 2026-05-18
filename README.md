@@ -1,10 +1,10 @@
-# pfSense Management Tools
+# pfSense Hyper-V Automation Toolkit
 
-Comprehensive toolkit for managing pfSense firewall via API and automation scripts for network interface setup, port forwarding synchronization, and troubleshooting.
+Automation toolkit for managing pfSense firewall interfaces, NAT rules, DHCP, firewall rules, and RDP port-forwarding in Hyper-V lab/training environments.
 
-**Version:** 1.0  
-**Last Updated:** April 29, 2026  
-**pfSense Version:** 2.8.1-RELEASE (API v2.6.4)
+**Version:** 2.0
+**Last Updated:** May 18, 2026
+**Status:** Production-Ready with Professional Structure
 
 ---
 
@@ -12,243 +12,237 @@ Comprehensive toolkit for managing pfSense firewall via API and automation scrip
 
 ```
 pfsense-management/
+│
+├── docs/                           # Documentation
+│   ├── runbooks/                   # Step-by-step guides
+│   │   ├── add-new-interface.md    # Primary: Setup new interfaces
+│   │   ├── quick-reference.md      # Common commands
+│   │   ├── setup-kubernetes-subnet.md
+│   │   └── port-forwarding.md
+│   │
+│   ├── troubleshooting/            # Problem resolutions
+│   │   ├── training-lan-firewall-apply-fix.md
+│   │   ├── training-lan-internet-nat-fix.md
+│   │   ├── training1-internet-connectivity-guide.md
+│   │   └── [more solutions...]
+│   │
+│   └── knowledge-base/             # Technical concepts
+│       ├── pfsense-nat-behavior.md
+│       ├── port-forward-automation-plan.md
+│       └── kubernetes1-subnet-setup.md
+│
+├── examples/                       # Usage examples
+│   └── rdp-port-forward-sync/      # Port forwarding examples
+│       ├── sync_port_forward.py    # Basic synchronization
+│       ├── sync-safe-mode.py       # Advanced with safety gates
+│       ├── config.sample.json
+│       ├── config-safe-mode.sample.json
+│       └── generated/              # Sample outputs
+│
+├── powershell/                     # PowerShell modules and scripts
+│   ├── workflows/                  # Automation scripts
+│   │   ├── setup-interface.ps1     # Interface setup automation
+│   │   ├── setup-kubernetes1-subnet.ps1
+│   │   └── sync-rdp-port-forward.ps1
+│   │
+│   └── diagnostics/                # Diagnostic tools
+│       └── README.md
+│
+├── configs/                        # Configuration templates
+│   ├── samples/
+│   │   ├── interface-setup.sample.json
+│   │   └── port-forward.sample.json
+│   │
+│   └── schemas/
+│       └── [JSON schemas for validation]
+│
+├── archive/                        # Legacy and deprecated code
+│   ├── legacy-setup-interfaces/    # Original API-based setup
+│   ├── poc/                        # Proof of concept experiments
+│   └── old-diagnostics/            # Historical troubleshooting scripts
+│
+├── generated/                      # Runtime outputs (git-ignored)
+│   └── [runtime state files]
+│
+├── tests/                          # Test suite (coming soon)
+│   ├── unit/
+│   ├── integration/
+│   └── fixtures/
+│
 ├── README.md                       # This file
-├── .state/                         # Runtime state and temporary files
-│
-├── setup-interfaces-playbook/      # 🎯 Primary: New interface setup
-│   ├── README.md                   # Complete step-by-step guide
-│   ├── setup-interface.ps1         # Automated setup script
-│   └── quick-reference.md          # Command reference card
-│
-├── port-forward-sync/              # 🎯 Primary: Port forwarding automation
-│   ├── README.md                   # Usage documentation
-│   ├── sync_port_forward.py        # Python sync script
-│   ├── requirements.txt            # Python dependencies
-│   └── config.sample.json          # Configuration template
-│
-├── setup-interfaces/               # Legacy: Manual interface setup
-│   ├── README.md                   # Original setup docs
-│   ├── configure_training_interface_api.py
-│   ├── requirements.txt
-│   └── api-config.sample.json
-│
-├── poc/                            # Proof of concept scripts
-│   ├── README.md                   # POC documentation
-│   ├── pfsense-api-poc.ps1         # API exploration
-│   ├── apply-rdp-chain.ps1         # RDP chain setup
-│   └── templates/                  # JSON templates
-│
-├── issue-wins/                     # Problem resolutions documentation
-│   ├── training-lan-firewall-apply-fix.md
-│   └── training-lan-internet-nat-fix.md
-│
-├── knowledge-book/                 # Technical knowledge base
-│   ├── pfsense-nat-behavior.md     # NAT concepts and best practices
-│   └── [future topics]
-│
-├── scripts/                        # Reusable utility scripts
-│   └── [utilities coming soon]
-│
-└── archived-diagnostics/           # Historical troubleshooting scripts
-    └── README.md                   # Archive index
+├── PROJECT-ANALYSIS.md             # Comprehensive project documentation
+├── .gitignore
+└── requirements.txt               # Python dependencies
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### New Interface Setup
+### 1. Add New Network Interface
 
-**Use this to add a new network interface to pfSense (LAN, Guest, Training, etc.)**
+**Start here** if you need to create a new isolated network (Training LAN, Guest network, etc.)
 
 ```powershell
-cd setup-interfaces-playbook
+# Read the comprehensive playbook
+Get-Content docs/runbooks/add-new-interface.md
 
-# Automated setup
-.\setup-interface.ps1 -InterfaceName "TRAININGLAN" `
+# Run the automated setup script
+.\powershell/workflows/setup-interface.ps1 `
+    -InterfaceName "TRAININGLAN" `
     -SwitchName "training-vm-lan-new" `
     -NetworkSubnet "192.168.50.0/24" `
     -PfSenseIP "192.168.50.1" `
     -HostIP "192.168.50.254"
-
-# Or follow manual guide
-Get-Content README.md
 ```
 
-**What it does:**
-- ✅ Creates Hyper-V virtual switch
-- ✅ Configures host network adapter
-- ✅ Guides through pfSense configuration (interface, DHCP, firewall, NAT)
-- ✅ Tests connectivity
-
-**Time:** ~30 minutes
+**What it covers:**
+- ✅ Hyper-V virtual switch setup
+- ✅ Host network adapter configuration
+- ✅ pfSense interface configuration
+- ✅ DHCP server setup
+- ✅ Firewall rules and NAT
+- ✅ Connectivity validation
 
 ---
 
-### Port Forward Synchronization
+### 2. Port Forward Synchronization
 
-**Use this to sync port forwarding rules from inventory files**
+Use this to automatically sync RDP port forwarding rules for training VMs:
 
 ```bash
-cd port-forward-sync
+cd examples/rdp-port-forward-sync
 
-# Configure
-cp config.sample.json config.json
-# Edit config.json with your settings
+# Basic mode
+python sync_port_forward.py --config config.sample.json --dry-run
 
-# Run sync
-python sync_port_forward.py
+# Safe mode (with lease age and connectivity checks)
+python sync-safe-mode.py --config config-safe-mode.sample.json --apply
 ```
 
-**What it does:**
-- ✅ Reads VM inventory and port mapping rules
-- ✅ Creates/updates pfSense port forward rules via API
-- ✅ Applies changes automatically
+---
+
+### 3. Troubleshoot Issues
+
+**Having connectivity problems?**
+
+```bash
+# First, check quick reference
+Get-Content docs/runbooks/quick-reference.md
+
+# Then, check similar issues
+ls docs/troubleshooting/
+```
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation by Role
 
-### For New Users
+### For Network Operators
 
-1. **[Setup Interfaces Playbook](setup-interfaces-playbook/README.md)** - Start here to add new network interfaces
-2. **[Quick Reference](setup-interfaces-playbook/quick-reference.md)** - Common commands and troubleshooting
-3. **[NAT Behavior Guide](knowledge-book/pfsense-nat-behavior.md)** - Understanding NAT configuration
+1. **[Add New Interface Guide](docs/runbooks/add-new-interface.md)** - Complete setup process
+2. **[Quick Reference](docs/runbooks/quick-reference.md)** - Common commands and troubleshooting
+3. **[Troubleshooting Guides](docs/troubleshooting/)** - Solutions to known problems
 
-### For Troubleshooting
+### For Network Engineers
 
-1. **[Issue Wins](issue-wins/)** - Documented problem resolutions
-   - Training LAN connectivity fix
-   - NAT configuration issues
-2. **[Archived Diagnostics](archived-diagnostics/)** - Historical troubleshooting scripts
+1. **[NAT Behavior Guide](docs/knowledge-base/pfsense-nat-behavior.md)** - Deep dive into pfSense NAT
+2. **[Port Forwarding Automation](docs/knowledge-base/port-forward-automation-plan.md)** - Architectural overview
+3. **[PROJECT-ANALYSIS.md](PROJECT-ANALYSIS.md)** - Complete project documentation
 
-### For Development
+### For Developers
 
-1. **[POC Scripts](poc/)** - API exploration and proof of concepts
-2. **[Port Forward Sync](port-forward-sync/)** - Python automation tool
-
----
-
-## 🎯 Primary Use Cases
-
-### 1. Add New Network Interface
-
-**Scenario:** Need to create a new isolated network (Training LAN, Guest network, etc.)
-
-**Solution:** `setup-interfaces-playbook/`
-- Automated script + manual guide
-- Covers Hyper-V, pfSense, DHCP, Firewall, NAT
-- Complete testing validation
-
-**Documentation:**
-- [Setup Guide](setup-interfaces-playbook/README.md)
-- [Quick Reference](setup-interfaces-playbook/quick-reference.md)
+1. **[Port Forward Sync Examples](examples/rdp-port-forward-sync/)** - Python automation code
+2. **[Archive POC Scripts](archive/poc/)** - API exploration examples
+3. **[Legacy Setup Code](archive/legacy-setup-interfaces/)** - Historical implementation reference
 
 ---
 
-### 2. Sync Port Forwarding Rules
+## 🎯 Common Tasks
 
-**Scenario:** Manage port forwarding for multiple VMs from inventory files
-
-**Solution:** `port-forward-sync/`
-- Python script with JSON configuration
-- Bulk create/update port forward rules
-- Automatic change application
-
-**Documentation:**
-- [Port Forward README](port-forward-sync/README.md)
-
----
-
-### 3. Explore pfSense API
-
-**Scenario:** Test API endpoints, prototype automation
-
-**Solution:** `poc/`
-- PowerShell API exploration scripts
-- Template JSON files
-- Quick prototyping environment
-
-**Documentation:**
-- [POC README](poc/README.md)
+| Task | Location | Details |
+|------|----------|---------|
+| Add new interface | `docs/runbooks/add-new-interface.md` | Complete 7-phase setup |
+| Sync port forwards | `examples/rdp-port-forward-sync/` | Automated RDP mapping |
+| Troubleshoot connectivity | `docs/troubleshooting/` | Common issues and fixes |
+| Understand NAT | `docs/knowledge-base/pfsense-nat-behavior.md` | NAT configuration guide |
+| Explore API | `archive/poc/` | API exploration scripts |
+| Learn the project | `PROJECT-ANALYSIS.md` | Comprehensive overview
 
 ---
 
-## 🛠️ Tools & Technologies
+## 🛠️ Technologies & Tools
 
 ### PowerShell Scripts
-- `setup-interfaces-playbook/setup-interface.ps1` - Interface automation
-- `poc/pfsense-api-poc.ps1` - API exploration
-- `poc/apply-rdp-chain.ps1` - RDP port forward chain
+- `powershell/workflows/setup-interface.ps1` - Interface automation
+- `powershell/workflows/sync-rdp-port-forward.ps1` - Port forward runner
+- Archive: POC API exploration scripts
 
 ### Python Tools
-- `port-forward-sync/sync_port_forward.py` - Port forwarding automation
-- `setup-interfaces/configure_training_interface_api.py` - Legacy interface config
+- `examples/rdp-port-forward-sync/sync_port_forward.py` - Basic port forward sync
+- `examples/rdp-port-forward-sync/sync-safe-mode.py` - Enhanced with safety gates
+- Archive: Legacy interface configuration
 
 ### pfSense API
-- Version: v2.6.4
-- Authentication: Basic Auth
-- Base URL: `http://192.168.10.1/api/v2/`
-- Key Endpoints:
+- **Version:** 2.8.1-RELEASE (API v2.6.4)
+- **Authentication:** Basic Auth
+- **Base URL:** `http://192.168.10.1/api/v2/`
+- **Key Endpoints:**
   - `/interface` - Interface management
   - `/firewall/rules` - Firewall rules
-  - `/firewall/apply` - Apply pending changes
-  - `/firewall/nat/outbound` - NAT configuration (limited)
+  - `/firewall/apply` - Apply pending changes (REQUIRED!)
+  - `/firewall/nat/outbound` - NAT configuration
   - `/routing/gateways` - Gateway status
+  - `/status/arp` - ARP discovery
+  - `/services/dhcpd/leases` - DHCP leases
 
 ---
 
-## ⚙️ Configuration Files
+## ⚙️ Configuration
 
-### For Port Forward Sync
-```
-port-forward-sync/config.json (from config.sample.json)
-```
-
-### For Legacy Interface Setup
-```
-setup-interfaces/api-config.json (from api-config.sample.json)
+### Port Forward Synchronization
+```bash
+examples/rdp-port-forward-sync/
+├── config.sample.json           # Basic mode configuration
+└── config-safe-mode.sample.json # Safe mode with validation
 ```
 
-### For POC Testing
-```
-poc/training-rdp-sync.config.json (optional)
-poc/training-vm-inventory.json (optional)
-```
+### Interface Setup
+Configuration is interactive via PowerShell script parameters.
 
-**⚠️ Never commit files with real credentials**
+**⚠️ Security:** Never commit real credentials. Use `.sample.json` files as templates.
 
 ---
 
 ## 📖 Knowledge Base
 
-### NAT Configuration
-- [NAT Behavior Guide](knowledge-book/pfsense-nat-behavior.md)
-  - Implicit vs Manual NAT
-  - Common configuration mistakes
-  - Troubleshooting flowcharts
+### Essential Reading
+1. **[Add New Interface](docs/runbooks/add-new-interface.md)** - Primary workflow
+2. **[NAT Behavior](docs/knowledge-base/pfsense-nat-behavior.md)** - Understanding NAT
+3. **[Quick Reference](docs/runbooks/quick-reference.md)** - Troubleshooting guide
 
-### Issue Resolutions
-- [Training LAN Firewall Apply Fix](issue-wins/training-lan-firewall-apply-fix.md)
-- [Training LAN Internet NAT Fix](issue-wins/training-lan-internet-nat-fix.md)
+### Troubleshooting
+- [Firewall Rules Not Applied](docs/troubleshooting/training-lan-firewall-apply-fix.md)
+- [NAT/Internet Not Working](docs/troubleshooting/training-lan-internet-nat-fix.md)
+- [Connectivity Issues](docs/troubleshooting/training1-internet-connectivity-guide.md)
 
-### API Reference
-- Repository Memory: `.state/` (if exists)
-- API Capabilities: See `knowledge-book/` for API documentation
+### Architecture
+- [Port Forward Automation Plan](docs/knowledge-base/port-forward-automation-plan.md)
+- [Kubernetes Subnet Setup](docs/knowledge-base/kubernetes1-subnet-setup.md)
 
 ---
 
-## 🔍 Finding What You Need
+## 🔍 Quick Navigation
 
-| I want to... | Go to... |
-|--------------|----------|
-| Add a new network interface | `setup-interfaces-playbook/` |
-| Manage port forwarding rules | `port-forward-sync/` |
-| Test pfSense API | `poc/` |
-| Learn about NAT | `knowledge-book/pfsense-nat-behavior.md` |
-| Fix connectivity issues | `issue-wins/` + `setup-interfaces-playbook/quick-reference.md` |
-| See old diagnostic scripts | `archived-diagnostics/` |
-| Find reusable utilities | `scripts/` (coming soon) |
+| Need | Location |
+|------|----------|
+| **Setup new interface** | `docs/runbooks/add-new-interface.md` |
+| **Sync port forwards** | `examples/rdp-port-forward-sync/` |
+| **Troubleshoot issues** | `docs/troubleshooting/` |
+| **Learn about NAT** | `docs/knowledge-base/pfsense-nat-behavior.md` |
+| **API exploration** | `archive/poc/` |
+| **Legacy code** | `archive/legacy-setup-interfaces/` |
+| **Old diagnostics** | `archive/old-diagnostics/` |
 
 ---
 
@@ -265,122 +259,64 @@ ping 8.8.8.8 -n 4          # Internet (NAT)
 ping google.com -n 2       # DNS
 ```
 
-### After Port Forward Setup
-```powershell
-# Test from external network
-Test-NetConnection -ComputerName <WAN_IP> -Port <FORWARDED_PORT>
-```
+See [docs/runbooks/quick-reference.md](docs/runbooks/quick-reference.md) for complete testing procedures.
 
 ---
 
-## 🐛 Troubleshooting
+## 📝 Key Concepts
 
-### Quick Checks
+### 1. Implicit vs Manual NAT
+- **Primary LAN (192.168.10.0/24):** Implicit NAT (automatic)
+- **Additional interfaces:** Manual NAT required
+- **Common mistake:** Automatic mode doesn't work for OPT interfaces
 
-1. **No connectivity to gateway**
-   ```powershell
-   # Check VM is on correct virtual switch
-   Get-VMNetworkAdapter -VMName "VM_NAME"
-   
-   # Check pfSense interface is UP
-   # Web UI: Interfaces → OPT1
-   ```
+See: [docs/knowledge-base/pfsense-nat-behavior.md](docs/knowledge-base/pfsense-nat-behavior.md)
 
-2. **Gateway works but no internet**
-   ```powershell
-   # Check NAT rule exists and is correct
-   # Web UI: Firewall → NAT → Outbound
-   # Source should be: [Interface] subnets (NOT "Any"!)
-   ```
+### 2. Firewall Apply Requirement
+- Rules exist in config but aren't active until applied
+- **REQUIRED:** Call `POST /api/v2/firewall/apply`
+- Easy to forget, causes confusion
 
-3. **Firewall rules not working**
-   ```powershell
-   # Apply pending changes via API
-   Invoke-RestMethod -Uri 'http://192.168.10.1/api/v2/firewall/apply' `
-       -Method POST -Headers @{Authorization="Basic $b64"; "Content-Type"="application/json"} `
-       -Body '{"async":false}'
-   ```
+See: [docs/troubleshooting/training-lan-firewall-apply-fix.md](docs/troubleshooting/training-lan-firewall-apply-fix.md)
 
-### See Also
-- [Quick Reference](setup-interfaces-playbook/quick-reference.md) - Troubleshooting flowchart
-- [Issue Wins](issue-wins/) - Real-world problem resolutions
+### 3. Port Forwarding Modes
+- **Basic:** Simple discovery and rule creation
+- **Safe Mode:** Lease validation + connectivity checks
+
+See: [examples/rdp-port-forward-sync/](examples/rdp-port-forward-sync/)
 
 ---
 
-## 📝 Best Practices
+## 🔐 Security
 
-1. **Always apply changes**
-   - Use API: `POST /api/v2/firewall/apply`
-   - Or click "Apply Changes" in web UI
-
-2. **Test incrementally**
-   - Don't configure everything then test
-   - Verify each phase before moving forward
-
-3. **Document issues**
-   - Add resolutions to `issue-wins/`
-   - Update knowledge base with learnings
-
-4. **Use descriptive names**
-   - Interfaces: "TRAININGLAN" not "OPT1"
-   - Rules: "Allow Training-LAN to Internet"
-
-5. **Follow the playbook**
-   - `setup-interfaces-playbook/` is tested and validated
-   - Don't skip NAT configuration for additional interfaces
-
----
-
-## 🔐 Security Notes
-
-- **Never commit real credentials** to repository
-- Use `.sample.json` files for configuration templates
-- Add real config files to `.gitignore`
+- **Never commit real credentials** - Use `.sample.json` files
 - Change default pfSense credentials in production
-- Use HTTPS for production API access
+- Use HTTPS in production (not self-signed)
+- Enable firewall apply validation
+- Audit NAT rules regularly
 
 ---
 
-## 🤝 Contributing
+## 📅 Recent Changes
 
-### Adding New Documentation
-```
-knowledge-book/          # Technical concepts and patterns
-issue-wins/              # Problem resolutions
-```
-
-### Adding New Scripts
-```
-scripts/                 # Reusable utilities
-poc/                     # Proof of concepts
-```
-
-### Archiving Old Scripts
-```
-archived-diagnostics/    # One-off diagnostic scripts
-```
+| Date | Change |
+|------|--------|
+| 2026-05-18 | Reorganized to professional structure (v2.0) |
+| 2026-04-29 | Added comprehensive PROJECT-ANALYSIS.md |
+| Earlier | Initial implementation |
 
 ---
 
-## 📅 Version History
+## 📖 Full Documentation
 
-| Date | Version | Changes |
-|------|---------|---------|
-| 2026-04-29 | 1.0 | Repository reorganization and documentation |
-| 2026-04-29 | 0.9 | Training LAN setup and troubleshooting |
-| Earlier | 0.x | Initial POC and port-forward-sync |
-
----
-
-## 📞 Quick Links
-
-- **Primary Playbook:** [setup-interfaces-playbook/README.md](setup-interfaces-playbook/README.md)
-- **Quick Commands:** [setup-interfaces-playbook/quick-reference.md](setup-interfaces-playbook/quick-reference.md)
-- **NAT Guide:** [knowledge-book/pfsense-nat-behavior.md](knowledge-book/pfsense-nat-behavior.md)
-- **Port Forward:** [port-forward-sync/README.md](port-forward-sync/README.md)
+For comprehensive project information, see:
+- **[PROJECT-ANALYSIS.md](PROJECT-ANALYSIS.md)** - Complete project overview
+- **[docs/runbooks/add-new-interface.md](docs/runbooks/add-new-interface.md)** - Primary setup guide
+- **[docs/knowledge-base/pfsense-nat-behavior.md](docs/knowledge-base/pfsense-nat-behavior.md)** - NAT deep dive
 
 ---
 
-**Environment:** Hyper-V + pfSense 2.8.1-RELEASE  
-**API Version:** v2.6.4  
+**Environment:** Hyper-V + pfSense 2.8.1-RELEASE
+**Status:** Production-Ready
 **Platform:** Windows PowerShell 5.1+, Python 3.x
+**License:** See LICENSE file
