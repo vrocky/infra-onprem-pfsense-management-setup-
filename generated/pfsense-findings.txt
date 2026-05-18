@@ -1,0 +1,17 @@
+Date: 2026-04-27
+Scope: Hyper-V accessibility and interface attachment check for PFSenseVM
+
+Findings:
+- VM PFSenseVM exists and is Running (Operating normally).
+- Hyper-V network adapters attached to switches:
+  - WAN
+  - VM-LAN-2
+  - training-vm-lan
+- Heartbeat integration service status is OK, indicating guest responsiveness.
+- Hyper-V console client (vmconnect) launches for PFSenseVM, confirming console accessibility.
+
+Notes:
+- Key-Value Pair Exchange and VSS reported protocol version mismatch warnings; these are non-blocking for console access.
+
+Conclusion:
+- pfSense console is accessible and base network attachment matches expected design.
